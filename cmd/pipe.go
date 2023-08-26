@@ -6,7 +6,6 @@ import (
 	"sptlrx/config"
 	"sptlrx/lyrics"
 	"sptlrx/pool"
-	"sptlrx/services/hosted"
 	"sptlrx/services/spotify"
 	"strings"
 
@@ -58,9 +57,6 @@ var pipeCmd = &cobra.Command{
 				// create new client
 				provider, _ = spotify.New(conf.Cookie)
 			}
-		} else {
-			// use hosted provider
-			provider = hosted.New(conf.Host)
 		}
 
 		if FlagVerbose {

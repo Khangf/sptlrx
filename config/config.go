@@ -7,9 +7,6 @@ import (
 	"os"
 	"path"
 	"sptlrx/player"
-	"sptlrx/services/mopidy"
-	"sptlrx/services/mpd"
-	"sptlrx/services/mpris"
 	"sptlrx/services/spotify"
 	"strconv"
 	"strings"
@@ -51,19 +48,6 @@ type Config struct {
 		Length   int    `yaml:"length"`
 		Overflow string `default:"word" yaml:"overflow"`
 	} `yaml:"pipe"`
-
-	Mpd struct {
-		Address  string `default:"127.0.0.1:6600" yaml:"address"`
-		Password string `yaml:"password"`
-	} `yaml:"mpd"`
-
-	Mopidy struct {
-		Address string `default:"127.0.0.1:6680" yaml:"address"`
-	} `yaml:"mopidy"`
-
-	Mpris struct {
-		Players []string `default:"[]" yaml:"players"`
-	} `yaml:"mpris"`
 }
 
 func New() *Config {
@@ -188,12 +172,6 @@ func GetPlayer(conf *Config) (player.Player, error) {
 	switch conf.Player {
 	case "spotify":
 		return spotify.New(conf.Cookie)
-	case "mpd":
-		return mpd.New(conf.Mpd.Address, conf.Mpd.Password), nil
-	case "mopidy":
-		return mopidy.New(conf.Mopidy.Address), nil
-	case "mpris":
-		return mpris.New(conf.Mpris.Players)
 	}
 	return nil, fmt.Errorf("unknown player: \"%s\"", conf.Player)
 }
