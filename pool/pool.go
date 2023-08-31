@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"reflect"
 	"sptlrx/config"
 	"sptlrx/lyrics"
 	"sptlrx/player"
@@ -8,9 +9,11 @@ import (
 )
 
 type Update struct {
-	Lines   []lyrics.Line
-	Index   int
-	Playing bool
+	Lines      []lyrics.Line
+	Index      int
+	Playing    bool
+	NowPlaying string
+	Artists    []string
 
 	Err error
 }
@@ -30,6 +33,8 @@ func Listen(
 	var playing bool
 	var position int
 	var inError bool
+	var nowPlaying string
+	var artists []string
 
 	var lines []lyrics.Line
 	var index int
@@ -86,6 +91,16 @@ func Listen(
 				changed = true
 				playing = update.state.Playing
 			}
+
+			if !reflect.DeepEqual(update.state.Artists, artists) {
+				changed = true
+				artists = update.state.Artists
+			}
+
+			if update.state.NowPlaying != nowPlaying {
+				changed = true
+				nowPlaying = update.state.NowPlaying
+			}
 			position = update.state.Position
 			newIndex := getIndex(position, index, lines)
 			if newIndex != index {
@@ -109,10 +124,12 @@ func Listen(
 
 		if changed && !inError {
 			ch <- Update{
-				Lines:   lines,
-				Index:   index,
-				Playing: playing,
-				Err:     nil,
+				Lines:      lines,
+				Index:      index,
+				Playing:    playing,
+				Err:        nil,
+				NowPlaying: nowPlaying,
+				Artists:    artists,
 			}
 		}
 	}

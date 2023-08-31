@@ -70,10 +70,17 @@ func (c *Client) State() (*player.State, error) {
 	if result.Item == nil {
 		return nil, nil
 	}
+	var artists []string
+	for _, artist := range result.Item.Artists {
+		artists = append(artists, artist.Name)
+	}
+
 	return &player.State{
-		ID:       "spotify:" + result.Item.ID,
-		Position: result.Progress,
-		Playing:  result.Playing,
+		ID:         "spotify:" + result.Item.ID,
+		Position:   result.Progress,
+		Playing:    result.Playing,
+		NowPlaying: result.Item.Name,
+		Artists:    artists,
 	}, nil
 }
 
@@ -229,7 +236,12 @@ type currentBody struct {
 	Progress int  `json:"progress_ms"`
 	Playing  bool `json:"is_playing"`
 	Item     *struct {
-		ID string `json:"id"`
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Artists []*struct {
+			Name string `json:"name"`
+			Type string `json:"type"`
+		} `json:"artists"`
 	} `json:"item"`
 }
 

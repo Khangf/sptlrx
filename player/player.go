@@ -13,4 +13,8 @@ type State struct {
 	Position int
 	// Playing means whether the track is playing at the moment.
 	Playing bool
+	// Song name of now playing
+	NowPlaying string
+	// Artist name of now playing songs
+	Artists []string
 }
