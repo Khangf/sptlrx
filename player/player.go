@@ -17,4 +17,5 @@ type State struct {
 	NowPlaying string
 	// Artist name of now playing songs
 	Artists []string
+	PicUrl  string
 }

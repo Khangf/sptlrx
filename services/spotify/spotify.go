@@ -74,6 +74,11 @@ func (c *Client) State() (*player.State, error) {
 	for _, artist := range result.Item.Artists {
 		artists = append(artists, artist.Name)
 	}
+	var picUrl string
+	for _, image := range result.Item.Album.Images {
+		picUrl = image.Url
+		break
+	}
 
 	return &player.State{
 		ID:         "spotify:" + result.Item.ID,
@@ -81,6 +86,7 @@ func (c *Client) State() (*player.State, error) {
 		Playing:    result.Playing,
 		NowPlaying: result.Item.Name,
 		Artists:    artists,
+		PicUrl:     picUrl,
 	}, nil
 }
 
@@ -242,6 +248,11 @@ type currentBody struct {
 			Name string `json:"name"`
 			Type string `json:"type"`
 		} `json:"artists"`
+		Album *struct {
+			Images []*struct {
+				Url string `json:"url"`
+			}
+		} `json:"album"`
 	} `json:"item"`
 }
 

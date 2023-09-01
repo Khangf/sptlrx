@@ -14,6 +14,7 @@ type Update struct {
 	Playing    bool
 	NowPlaying string
 	Artists    []string
+	PicUrl     string
 
 	Err error
 }
@@ -35,6 +36,7 @@ func Listen(
 	var inError bool
 	var nowPlaying string
 	var artists []string
+	var picUrl string
 
 	var lines []lyrics.Line
 	var index int
@@ -87,16 +89,18 @@ func Listen(
 				lines = newLines
 				index = 0
 			}
+			if update.state.PicUrl != picUrl {
+				changed = true
+				picUrl = update.state.PicUrl
+			}
 			if update.state.Playing != playing {
 				changed = true
 				playing = update.state.Playing
 			}
-
 			if !reflect.DeepEqual(update.state.Artists, artists) {
 				changed = true
 				artists = update.state.Artists
 			}
-
 			if update.state.NowPlaying != nowPlaying {
 				changed = true
 				nowPlaying = update.state.NowPlaying
@@ -130,6 +134,7 @@ func Listen(
 				Err:        nil,
 				NowPlaying: nowPlaying,
 				Artists:    artists,
+				PicUrl:     picUrl,
 			}
 		}
 	}

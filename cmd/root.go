@@ -171,6 +171,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&FlagVerbose, "verbose", "v", false, "force print errors")
 
 	rootCmd.AddCommand(pipeCmd)
+	rootCmd.AddCommand(displayCmd)
 }
 
 func Execute() {
