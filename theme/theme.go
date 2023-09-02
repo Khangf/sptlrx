@@ -16,7 +16,7 @@ func (*MyTheme) Font(s fyne.TextStyle) fyne.Resource {
 }
 
 func (*MyTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
-	return theme.DefaultTheme().Color(n, v)
+	return color.Black
 }
 
 func (*MyTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
