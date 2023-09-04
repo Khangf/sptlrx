@@ -142,8 +142,6 @@ var displayCmd = &cobra.Command{
 				wSpacer,
 				wSpacer,
 			),
-			hSpacer,
-			hSpacer,
 		)
 
 		layoutOne = container.NewBorder(topsongHBox, nil, leftLyrics, nil, nil)
