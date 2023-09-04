@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/reflow/wrap"
@@ -27,27 +26,26 @@ import (
 )
 
 var (
-	displayMode  int         = 0
-	currentLyric string      = ""
-	nowPlaying   string      = ""
-	artists      []string    = make([]string, 0)
-	picUrl       string      = ""
-	picImage     image.Image = nil
+	displayMode int         = 0
+	nowPlaying  string      = ""
+	artists     []string    = make([]string, 0)
+	picUrl      string      = ""
+	picImage    image.Image = nil
 
 	displayModeOne struct {
-		label_1 widget.Label
-		label_2 widget.Label
-		label_3 widget.Label
-		label_4 widget.Label
+		lyricTextLine_1 *canvas.Text
+		lyricTextLine_2 *canvas.Text
+		lyricTextLine_3 *canvas.Text
+		lyricTextLine_4 *canvas.Text
 	}
 
 	artistText   *canvas.Text
 	songnameText *canvas.Text
-	lyricText    *canvas.Text
 	songImage    *canvas.Image
 
-	fApp fyne.App
-	wind fyne.Window
+	fApp     fyne.App
+	wind     fyne.Window
+	windSize fyne.Size
 
 	layoutOne *fyne.Container
 )
@@ -61,14 +59,23 @@ var displayCmd = &cobra.Command{
 		fApp.Settings().SetTheme(&custom.MyTheme{})
 		wind = fApp.NewWindow("KLyrics")
 		wind.SetFullScreen(true)
-
+		wind.SetCloseIntercept(func() {
+			fmt.Println("Window closed")
+			fApp.Quit()
+		})
 		// initialize UI - its fine to be empty
 		artistText = canvas.NewText(strings.Join(artists, ", "), color.White)
 		artistText.TextSize = 50
 		songnameText = canvas.NewText(nowPlaying, color.White)
 		songnameText.TextSize = 100
-		lyricText = canvas.NewText(currentLyric, color.White)
-		lyricText.TextSize = 100
+		displayModeOne.lyricTextLine_1 = canvas.NewText("", color.White)
+		displayModeOne.lyricTextLine_1.TextSize = 100
+		displayModeOne.lyricTextLine_2 = canvas.NewText("", color.White)
+		displayModeOne.lyricTextLine_2.TextSize = 100
+		displayModeOne.lyricTextLine_3 = canvas.NewText("", color.White)
+		displayModeOne.lyricTextLine_3.TextSize = 100
+		displayModeOne.lyricTextLine_4 = canvas.NewText("", color.White)
+		displayModeOne.lyricTextLine_4.TextSize = 100
 
 		hSpacer := canvas.NewRectangle(color.Transparent)
 		hSpacer.SetMinSize(fyne.NewSize(0, 50))
@@ -96,23 +103,52 @@ var displayCmd = &cobra.Command{
 			wSpacer,
 		)
 
-		leftlyricHBox := container.NewHBox(
-			wSpacer,
-			wSpacer,
-			wSpacer,
-			lyricText,
-			wSpacer,
-			wSpacer,
-			wSpacer,
+		leftLyrics := container.NewVBox(
+			hSpacer,
+			hSpacer,
+			container.NewHBox(
+				wSpacer,
+				wSpacer,
+				wSpacer,
+				displayModeOne.lyricTextLine_1,
+				wSpacer,
+				wSpacer,
+				wSpacer,
+			),
+			container.NewHBox(
+				wSpacer,
+				wSpacer,
+				wSpacer,
+				displayModeOne.lyricTextLine_2,
+				wSpacer,
+				wSpacer,
+				wSpacer,
+			),
+			container.NewHBox(
+				wSpacer,
+				wSpacer,
+				wSpacer,
+				displayModeOne.lyricTextLine_3,
+				wSpacer,
+				wSpacer,
+				wSpacer,
+			),
+			container.NewHBox(
+				wSpacer,
+				wSpacer,
+				wSpacer,
+				displayModeOne.lyricTextLine_4,
+				wSpacer,
+				wSpacer,
+				wSpacer,
+			),
+			hSpacer,
+			hSpacer,
 		)
 
-		layoutOne = container.NewBorder(topsongHBox, nil, leftlyricHBox, nil, nil)
+		layoutOne = container.NewBorder(topsongHBox, nil, leftLyrics, nil, nil)
 		wind.SetContent(layoutOne)
 
-		wind.SetCloseIntercept(func() {
-			fmt.Println("Window closed")
-			fApp.Quit()
-		})
 		go startLyrics()
 		wind.ShowAndRun()
 		return nil
@@ -120,6 +156,7 @@ var displayCmd = &cobra.Command{
 }
 
 func startLyrics() {
+	currentLyric := ""
 	conf, err := config.Load()
 	if err != nil {
 		fmt.Println("couldn't load config: ", err)
@@ -237,7 +274,53 @@ func startLyrics() {
 				}
 			}
 		}
-		lyricText.Text = currentLyric
-		lyricText.Refresh()
+
+		words := strings.Fields(currentLyric)
+		chunks := []string{}
+		currentChunk := ""
+
+		// Iterate through the words and add them to the current chunk until it reaches 40 characters
+		for _, word := range words {
+			if len(currentChunk)+len(word)+1 <= 40 {
+				if currentChunk != "" {
+					currentChunk += " "
+				}
+				currentChunk += word
+			} else {
+				chunks = append(chunks, currentChunk)
+				currentChunk = word
+			}
+		}
+		// Add the last chunk
+		if currentChunk != "" {
+			chunks = append(chunks, currentChunk)
+		}
+
+		switch chunk := len(chunks); {
+		case chunk >= 4:
+			displayModeOne.lyricTextLine_1.Text = chunks[0]
+			displayModeOne.lyricTextLine_2.Text = chunks[1]
+			displayModeOne.lyricTextLine_3.Text = chunks[2]
+			displayModeOne.lyricTextLine_4.Text = chunks[3]
+		case chunk == 3:
+			displayModeOne.lyricTextLine_1.Text = chunks[0]
+			displayModeOne.lyricTextLine_2.Text = chunks[1]
+			displayModeOne.lyricTextLine_3.Text = chunks[2]
+			displayModeOne.lyricTextLine_4.Text = ""
+		case chunk == 2:
+			displayModeOne.lyricTextLine_1.Text = chunks[0]
+			displayModeOne.lyricTextLine_2.Text = chunks[1]
+			displayModeOne.lyricTextLine_3.Text = ""
+			displayModeOne.lyricTextLine_4.Text = ""
+		default:
+			displayModeOne.lyricTextLine_1.Text = chunks[0]
+			displayModeOne.lyricTextLine_2.Text = ""
+			displayModeOne.lyricTextLine_3.Text = ""
+			displayModeOne.lyricTextLine_4.Text = ""
+		}
+		displayModeOne.lyricTextLine_1.Refresh()
+		displayModeOne.lyricTextLine_2.Refresh()
+		displayModeOne.lyricTextLine_3.Refresh()
+		displayModeOne.lyricTextLine_4.Refresh()
 	}
 }
