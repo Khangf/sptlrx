@@ -247,28 +247,28 @@ func startLyrics() {
 
 		if update.Lines == nil || !lyrics.Timesynced(update.Lines) {
 			currentLyric = nowPlaying
-			continue
-		}
-
-		line := update.Lines[update.Index].Words
-		if conf.Pipe.Length == 0 {
-			currentLyric = line
+			// continue
 		} else {
-			switch conf.Pipe.Overflow {
-			case "word":
-				s := wordwrap.String(line, conf.Pipe.Length)
-				currentLyric = strings.Split(s, "\n")[0]
-			case "none":
-				s := wrap.String(line, conf.Pipe.Length)
-				currentLyric = strings.Split(s, "\n")[0]
-			case "ellipsis":
-				s := wrap.String(line, conf.Pipe.Length)
-				lines := strings.Split(s, "\n")
-				if len(lines) == 1 {
-					currentLyric = lines[0]
-				} else {
-					s := wrap.String(lines[0], conf.Pipe.Length-3)
-					currentLyric = strings.Split(s, "\n")[0] + "..."
+			line := update.Lines[update.Index].Words
+			if conf.Pipe.Length == 0 {
+				currentLyric = line
+			} else {
+				switch conf.Pipe.Overflow {
+				case "word":
+					s := wordwrap.String(line, conf.Pipe.Length)
+					currentLyric = strings.Split(s, "\n")[0]
+				case "none":
+					s := wrap.String(line, conf.Pipe.Length)
+					currentLyric = strings.Split(s, "\n")[0]
+				case "ellipsis":
+					s := wrap.String(line, conf.Pipe.Length)
+					lines := strings.Split(s, "\n")
+					if len(lines) == 1 {
+						currentLyric = lines[0]
+					} else {
+						s := wrap.String(lines[0], conf.Pipe.Length-3)
+						currentLyric = strings.Split(s, "\n")[0] + "..."
+					}
 				}
 			}
 		}
@@ -294,24 +294,29 @@ func startLyrics() {
 			chunks = append(chunks, currentChunk)
 		}
 
-		switch chunk := len(chunks); {
-		case chunk >= 4:
+		switch chunkSize := len(chunks); {
+		case chunkSize >= 4:
 			displayModeOne.lyricTextLine_1.Text = chunks[0]
 			displayModeOne.lyricTextLine_2.Text = chunks[1]
 			displayModeOne.lyricTextLine_3.Text = chunks[2]
 			displayModeOne.lyricTextLine_4.Text = chunks[3]
-		case chunk == 3:
+		case chunkSize == 3:
 			displayModeOne.lyricTextLine_1.Text = chunks[0]
 			displayModeOne.lyricTextLine_2.Text = chunks[1]
 			displayModeOne.lyricTextLine_3.Text = chunks[2]
 			displayModeOne.lyricTextLine_4.Text = ""
-		case chunk == 2:
+		case chunkSize == 2:
 			displayModeOne.lyricTextLine_1.Text = chunks[0]
 			displayModeOne.lyricTextLine_2.Text = chunks[1]
 			displayModeOne.lyricTextLine_3.Text = ""
 			displayModeOne.lyricTextLine_4.Text = ""
-		default:
+		case chunkSize == 1:
 			displayModeOne.lyricTextLine_1.Text = chunks[0]
+			displayModeOne.lyricTextLine_2.Text = ""
+			displayModeOne.lyricTextLine_3.Text = ""
+			displayModeOne.lyricTextLine_4.Text = ""
+		default:
+			displayModeOne.lyricTextLine_1.Text = ""
 			displayModeOne.lyricTextLine_2.Text = ""
 			displayModeOne.lyricTextLine_3.Text = ""
 			displayModeOne.lyricTextLine_4.Text = ""
